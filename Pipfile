@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+web3 = "*"
+pandas = "*"
+psycopg2 = "*"
+sqlalchemy = "*"
+pymongo = "*"
+jupyter = "*"
+neo4j = "*"
+cryptostats = "*"
+tqdm = "*"
+pyspark = "*"
+pyarrow = "*"
+pyspark-stubs = "==3.0.0.post3"
+pyspark-pandas = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

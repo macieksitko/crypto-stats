@@ -1,0 +1,5 @@
+.env
+app/data/*
+temp.py
+zeppelin/zeppelin/notebook/
+**/__pycache__

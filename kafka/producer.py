@@ -1,31 +1,74 @@
-from confluent_kafka import Producer
-import socket
+from confluent_kafka import Producer, SerializingProducer
 from web3 import Web3
 from websockets import connect
+from dotenv import load_dotenv
 import asyncio
 import json
-import requests
+import os
 
 
-web3 = Web3(Web3.HTTPProvider(infura_url))
+load_dotenv()
+    
+ws_infura = os.getenv('INFURA_WSS_URL')
+http_infura = os.getenv('INFURA_NODE_URL')
+
+web3 = Web3(Web3.HTTPProvider(http_infura))
+
+def json_serializer(msg, s_obj):
+    return json.dumps(msg).encode('utf-8')
+
+conf = {
+    'bootstrap.servers': 'localhost:9094',
+    'value.serializer': json_serializer
+}
+
+producer = SerializingProducer(conf)
 
 async def get_event():
-    async with connect(infura_url) as ws:
-        await ws.send('{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["newPendingTransactions"]}')
+    async with connect(ws_infura) as ws:
+        await ws.send('{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["newHeads"]}')
         subscription_response = await ws.recv()
-        print(subscription_response) #{"jsonrpc":"2.0","id":1,"result":"0xd67da23f62a01f58042bc73d3f1c8936"}
+        print(subscription_response)
 
-loop = asyncio.new_event_loop()
-loop.run_until_complete(get_event())
+        while True:
+            try:
+                message = await asyncio.wait_for(ws.recv(), timeout=15)
+                response = json.loads(message)
+                result = response['params']['result']
 
-print('done')
-# conf = {'bootstrap.servers': 'localhost:9094'}
+                block = web3.eth.get_block(result['number'], True)
 
-# producer = Producer(conf)
+                block_data = {
+                    "number": str(block["number"]),
+                    "hash": str(block["hash"]),
+                    "size": str(block["size"]),
+                }
 
-# print(producer)
+                producer.produce('blocks', value=block_data)
+                print("Blocks messages: ", len(producer))
 
-# for i in range(100):
-#   producer.produce('test', key=f"key{i}", value=f"value{i}")
+                for tx in block['transactions']:
+                  tx_data = {
+                      "hash": str(tx["hash"].hex()),
+                      "from": str(tx["from"]),
+                      "to": str(tx["to"]),
+                      "value": str(tx["value"]),
+                      "blockNumber": str(tx["blockNumber"])
+                  }
 
-# producer.flush()
+                  if tx_data["hash"] == None:
+                      print(tx_data)
+
+                  producer.produce('txs', value=tx_data)
+                  
+                print("Tx messages: ", len(producer))
+                producer.flush()
+            except Exception as e:
+                print(e)
+
+if __name__ == "__main__":
+    print("Running producer...")
+    loop = asyncio.get_event_loop()
+
+    while True:
+        loop.run_until_complete(get_event())

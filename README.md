@@ -12,8 +12,9 @@
 ## Roadmap
 
 - ✅ Load some raw data from Ethereum blockchain to graph database
-- 🚧 Add Kafka streaming to load new data in real time
-- 🚧 Migrate to cloud (eg. Databricks)
+- ✅ Add Kafka streaming app to load new data in real time
+- 🚧 Setup Django API to test scripts easily
+- 🚧 Migrate to cloud (eg. Databricks) or setup Airflow to orchestrate Kafka and EthereumService
 - 🚧 Choose and apply graph algorithms on clean data
 
 ## Current state of the project
@@ -23,6 +24,7 @@
 - Project includes Zeppelin setup but it's currently unused
 - Code needs refactor
 - EthereumService is based on Pandas Dataframes and EthereumServiceSpark on PySpark Dataframes
+- Kafka Producer is receiving data from Infura Websocket and Consumer loads it into graph database
 
 ### Neo4j nodes
 

@@ -4,4 +4,4 @@ temp.py
 zeppelin/zeppelin/notebook/
 **/__pycache__
 
-kafka/checkpoint/*
+kafka/checkpoints/*

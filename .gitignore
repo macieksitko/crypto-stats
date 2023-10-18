@@ -3,3 +3,4 @@ app/data/*
 temp.py
 zeppelin/zeppelin/notebook/
 **/__pycache__
+kafka/checkpoints/*
